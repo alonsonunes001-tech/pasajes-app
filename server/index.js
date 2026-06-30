@@ -1,6 +1,8 @@
-console.log('ENV:', process.env.DATABASE_URL ? 'DATABASE_URL encontrada' : 'DATABASE_URL NO encontrada');
-console.log('NODE_ENV:', process.env.NODE_ENV);
 require('dotenv').config();
+
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DATABASE_URL existe:', !!process.env.DATABASE_URL);
+
 const express = require('express');
 const cors    = require('cors');
 const { sequelize } = require('./models');
@@ -29,6 +31,6 @@ sequelize.authenticate()
     app.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));
   })
   .catch(err => {
-  console.error('❌ Error conectando a BD:', err);
+    console.error('❌ Error conectando a BD:', err);
     process.exit(1);
   });
