@@ -27,6 +27,6 @@ sequelize.authenticate()
     app.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));
   })
   .catch(err => {
-    console.error('❌ Error conectando a BD:', err.message);
+  console.error('❌ Error conectando a BD:', err);
     process.exit(1);
   });
