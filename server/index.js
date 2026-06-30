@@ -1,36 +1,47 @@
+const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('DATABASE_URL existe:', !!process.env.DATABASE_URL);
+const isProduction = process.env.NODE_ENV === 'production';
 
-const express = require('express');
-const cors    = require('cors');
-const { sequelize } = require('./models');
+const sequelize = isProduction
+  ? new Sequelize(process.env.DATABASE_URL, {
+      dialect: 'postgres',
+      dialectOptions: {
+        ssl: { require: true, rejectUnauthorized: false },
+      },
+      logging: false,
+    })
+  : new Sequelize(
+      process.env.DB_NAME || 'pasajes_db',
+      process.env.DB_USER || 'postgres',
+      process.env.DB_PASSWORD || null,
+      {
+        host: process.env.DB_HOST || '127.0.0.1',
+        port: process.env.DB_PORT || 5432,
+        dialect: 'postgres',
+        logging: false,
+      }
+    );
 
-const authRoutes     = require('./routes/auth');
-const viajesRoutes   = require('./routes/viajes');
-const asientosRoutes = require('./routes/asientos');
-const pasajesRoutes  = require('./routes/pasajes');
+const db = {};
+db.sequelize = sequelize;
+db.Sequelize = Sequelize;
 
-const app  = express();
-const PORT = process.env.PORT || 3001;
+db.Usuario = require('./usuario')(sequelize, Sequelize.DataTypes);
+db.Viaje   = require('./viaje')(sequelize, Sequelize.DataTypes);
+db.Asiento = require('./asiento')(sequelize, Sequelize.DataTypes);
+db.Pasaje  = require('./pasaje')(sequelize, Sequelize.DataTypes);
 
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
-app.use(express.json());
+db.Viaje.hasMany(db.Asiento,   { foreignKey: 'viajeId' });
+db.Asiento.belongsTo(db.Viaje, { foreignKey: 'viajeId' });
 
-app.use('/api/auth',     authRoutes);
-app.use('/api/viajes',   viajesRoutes);
-app.use('/api/asientos', asientosRoutes);
-app.use('/api/pasajes',  pasajesRoutes);
+db.Usuario.hasMany(db.Pasaje,   { foreignKey: 'usuarioId' });
+db.Pasaje.belongsTo(db.Usuario, { foreignKey: 'usuarioId' });
 
-app.get('/api/health', (req, res) => res.json({ status: 'ok' }));
+db.Asiento.hasOne(db.Pasaje,    { foreignKey: 'asientoId' });
+db.Pasaje.belongsTo(db.Asiento, { foreignKey: 'asientoId' });
 
-sequelize.authenticate()
-  .then(() => {
-    console.log('✅ Conexión a BD establecida');
-    app.listen(PORT, () => console.log(`🚀 Servidor en http://localhost:${PORT}`));
-  })
-  .catch(err => {
-    console.error('❌ Error conectando a BD:', err);
-    process.exit(1);
-  });
+db.Viaje.hasMany(db.Pasaje,    { foreignKey: 'viajeId' });
+db.Pasaje.belongsTo(db.Viaje,  { foreignKey: 'viajeId' });
+
+module.exports = db;
