@@ -1,3 +1,5 @@
+console.log('ENV:', process.env.DATABASE_URL ? 'DATABASE_URL encontrada' : 'DATABASE_URL NO encontrada');
+console.log('NODE_ENV:', process.env.NODE_ENV);
 require('dotenv').config();
 const express = require('express');
 const cors    = require('cors');
