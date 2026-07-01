@@ -12,21 +12,31 @@ export default function Viajes() {
   const { usuario, logout } = useAuth();
   const navigate = useNavigate();
 
+  const ordenar = (lista, criterio) => {
+    const resultado = [...lista];
+    if (criterio === 'precio_asc') resultado.sort((a, b) => a.precio - b.precio);
+    if (criterio === 'precio_desc') resultado.sort((a, b) => b.precio - a.precio);
+    if (criterio === 'hora_asc') resultado.sort((a, b) => a.hora.localeCompare(b.hora));
+    if (criterio === 'hora_desc') resultado.sort((a, b) => b.hora.localeCompare(a.hora));
+    return resultado;
+  };
+
   const buscar = async () => {
     const params = {};
     if (origen) params.origen = origen;
     if (destino) params.destino = destino;
     if (fecha) params.fecha = fecha;
     const res = await api.get('/viajes', { params });
-    let resultado = res.data;
-    if (orden === 'precio_asc') resultado.sort((a, b) => a.precio - b.precio);
-    if (orden === 'precio_desc') resultado.sort((a, b) => b.precio - a.precio);
-    if (orden === 'hora_asc') resultado.sort((a, b) => a.hora.localeCompare(b.hora));
-    if (orden === 'hora_desc') resultado.sort((a, b) => b.hora.localeCompare(a.hora));
-    setViajes(resultado);
+    setViajes(ordenar(res.data, orden));
   };
 
   useEffect(() => { buscar(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Reordena en el cliente al instante cuando cambia el criterio,
+  // sin tener que volver a apretar "Buscar".
+  useEffect(() => {
+    setViajes((prev) => ordenar(prev, orden));
+  }, [orden]);
 
   const handleLogout = () => {
     logout();
