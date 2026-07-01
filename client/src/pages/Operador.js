@@ -23,7 +23,7 @@ export default function Operador() {
       return;
     }
     cargarViajes();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 

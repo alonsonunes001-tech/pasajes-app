@@ -20,7 +20,7 @@ export default function Viajes() {
     setViajes(res.data);
   };
 
-  useEffect(() => { buscar(); }, []);
+  useEffect(() => { buscar(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = () => {
     logout();

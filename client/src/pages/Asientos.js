@@ -21,7 +21,7 @@ export default function Asientos() {
     if (viajesRes.data.length > 0) setViaje(viajesRes.data[0]);
   };
 
-  useEffect(() => { cargarDatos(); }, [viajeId]);
+useEffect(() => { cargarDatos(); }, [viajeId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const comprar = async (asientoId) => {
     if (!usuario) { navigate('/login'); return; }
