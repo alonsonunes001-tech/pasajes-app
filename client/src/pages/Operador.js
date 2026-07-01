@@ -45,6 +45,10 @@ export default function Operador() {
       return;
     }
 
+    if (form.origen.trim().toLowerCase() === form.destino.trim().toLowerCase()) {
+  setError('El origen y destino no pueden ser iguales');
+  return;
+}
     try {
       if (editando) {
         await api.put(`/viajes/${editando}`, form);

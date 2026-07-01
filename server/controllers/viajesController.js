@@ -15,6 +15,7 @@ exports.getViajes = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
 exports.createViaje = async (req, res) => {
   try {
     const { origen, destino, fecha, hora, precio, totalAsientos } = req.body;
@@ -28,6 +29,9 @@ exports.createViaje = async (req, res) => {
     const asientos = parseInt(totalAsientos) || 40;
     if (asientos < 1 || asientos > 40)
       return res.status(400).json({ error: 'El total de asientos debe ser entre 1 y 40' });
+
+    if (origen.trim().toLowerCase() === destino.trim().toLowerCase())
+      return res.status(400).json({ error: 'El origen y destino no pueden ser iguales' });
 
     const viaje = await Viaje.create({ origen, destino, fecha, hora, precio, totalAsientos: asientos });
 
@@ -58,6 +62,11 @@ exports.updateViaje = async (req, res) => {
       if (asientos < 1 || asientos > 40)
         return res.status(400).json({ error: 'El total de asientos debe ser entre 1 y 40' });
     }
+
+    const origenFinal = req.body.origen || viaje.origen;
+    const destinoFinal = req.body.destino || viaje.destino;
+    if (origenFinal.trim().toLowerCase() === destinoFinal.trim().toLowerCase())
+      return res.status(400).json({ error: 'El origen y destino no pueden ser iguales' });
 
     await viaje.update(req.body);
     res.json(viaje);
