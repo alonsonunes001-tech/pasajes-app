@@ -31,6 +31,20 @@ export default function Operador() {
     e.preventDefault();
     setError('');
     setExito('');
+
+    if (!form.origen || !form.destino || !form.fecha || !form.hora || !form.precio || !form.totalAsientos) {
+      setError('Todos los campos son obligatorios');
+      return;
+    }
+    if (Number(form.precio) <= 0) {
+      setError('El precio debe ser mayor a 0');
+      return;
+    }
+    if (Number(form.totalAsientos) < 1 || Number(form.totalAsientos) > 40) {
+      setError('El total de asientos debe ser entre 1 y 40');
+      return;
+    }
+
     try {
       if (editando) {
         await api.put(`/viajes/${editando}`, form);
