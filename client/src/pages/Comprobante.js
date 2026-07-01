@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import jsPDF from 'jspdf';
 import api from '../services/api';
 
 export default function Comprobante() {
@@ -10,6 +11,48 @@ export default function Comprobante() {
   useEffect(() => {
     api.get(`/pasajes/${id}`).then((res) => setPasaje(res.data));
   }, [id]);
+
+  const descargarPDF = () => {
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text('Comprobante de pasaje', 20, 20);
+
+    doc.setFontSize(11);
+    doc.setTextColor(120);
+    doc.text(`Pasaje #${pasaje.id}`, 20, 28);
+
+    doc.setDrawColor(200);
+    doc.line(20, 34, 190, 34);
+
+    const datos = [
+      ['Pasajero', pasaje.Usuario?.nombre || '-'],
+      ['Origen', pasaje.Viaje?.origen || '-'],
+      ['Destino', pasaje.Viaje?.destino || '-'],
+      ['Fecha', pasaje.Viaje?.fecha || '-'],
+      ['Hora', pasaje.Viaje?.hora || '-'],
+      ['Asiento', `N° ${pasaje.Asiento?.numero ?? '-'}`],
+      ['Precio', `$${Number(pasaje.precio).toLocaleString('es-CL')}`],
+    ];
+
+    let y = 48;
+    doc.setFontSize(12);
+    datos.forEach(([label, value]) => {
+      doc.setTextColor(100);
+      doc.text(`${label}:`, 20, y);
+      doc.setTextColor(20);
+      doc.text(`${value}`, 70, y);
+      y += 10;
+    });
+
+    doc.setDrawColor(200);
+    doc.line(20, y + 2, 190, y + 2);
+    doc.setFontSize(9);
+    doc.setTextColor(150);
+    doc.text('RutaExpress - Comprobante generado electrónicamente', 20, y + 10);
+
+    doc.save(`comprobante-pasaje-${pasaje.id}.pdf`);
+  };
 
   if (!pasaje) return (
     <div className="min-h-screen bg-[#0a0a0c] flex items-center justify-center text-zinc-400">
@@ -66,7 +109,13 @@ export default function Comprobante() {
           </div>
 
           {/* Footer */}
-          <div className="p-6">
+          <div className="p-6 space-y-3">
+            <button
+              onClick={descargarPDF}
+              className="w-full bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-zinc-900 font-semibold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              📄 Descargar PDF
+            </button>
             <button
               onClick={() => navigate('/mis-pasajes')}
               className="w-full bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-400 hover:to-purple-500 text-white font-semibold py-3 rounded-xl transition-all"
